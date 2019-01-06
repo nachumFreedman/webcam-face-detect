@@ -8,28 +8,31 @@ class App extends Component {
   state = {
     posts: [],
     isFaceAttempts: 0,
-    faces: []    
+    faces: [],
+    isFace: true,
+    waiting: false,
   }
 
   
   checkFace = () => (this.state.faces.length ? null :
                      setTimeout(()=>{this.sendFace() &&
-                                     this.setState({isFaceAttemps: this.state.isFaceAttempts + 1})},2000)
+                                     this.setState({isFaceAttemps: this.state.isFaceAttempts + 1})},1000)
   )
-  
+
+  sendFace = () => this.setState({isFace: false})
+
   setImg = img => {
+    this.setState({waiting: true});
     console.log(img)
     const imgFile = this.dataURLtoFile(img, 'image.jpg');  
     console.log(imgFile)
-    const formData  = new FormData();
-    
+    const formData  = new FormData();    
     formData.append('file', imgFile);
-
     fetch(domain+'/upload', {
-        method: 'POST',
-        body: formData
+      method: 'POST',
+      body: formData
     }).then((response) => response.json()
-    ).then((faces)=>this.setState({faces}) && console.log(faces));     
+    ).then((faces)=>this.setState({faces, waiting: 'success'}) && console.log(faces));     
   }
   
 
@@ -47,12 +50,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Camera onImg={this.setImg} isFace={this.state.isFace}/>
-        {
-          this.state.isFaceAttempts > 2 ?
-                                      <h1>No face</h1>
-                                    : null
-        }
+        <Camera onImg={this.setImg} isFace={this.state.isFace} waiting={this.state.waiting}/>
       </div>
     );
   }
